@@ -7,10 +7,12 @@ public class Matrix {
             for(int c=0; c < matrix[l].length; c++) {
                 if (matrix[l][c].equals(ElementKind.GROUND.getSymbol())) this.matrix[l][c] = new Element(ElementKind.GROUND);
                 if (matrix[l][c].equals(ElementKind.WALL.getSymbol())) this.matrix[l][c] = new Element(ElementKind.WALL);
-                if (matrix[l][c].equals(ElementKind.MAN.getSymbol())) this.matrix[l][c] = new Element(ElementKind.MAN);
-                if (matrix[l][c].equals(ElementKind.WOMAN.getSymbol())) this.matrix[l][c] = new Element(ElementKind.WOMAN);
-                if (matrix[l][c].equals(ElementKind.COUPLE.getSymbol())) this.matrix[l][c] = new Element(ElementKind.COUPLE);
+                //if (matrix[l][c].equals(ElementKind.MAN.getSymbol())) this.matrix[l][c] = new Element(ElementKind.MAN);
+                //if (matrix[l][c].equals(ElementKind.WOMAN.getSymbol())) this.matrix[l][c] = new Element(ElementKind.WOMAN);
+                //if (matrix[l][c].equals(ElementKind.COUPLE.getSymbol())) this.matrix[l][c] = new Element(ElementKind.COUPLE);
                 if (matrix[l][c].equals(ElementKind.REGISTRY_OFFICE.getSymbol())) this.matrix[l][c] = new Element(ElementKind.REGISTRY_OFFICE);
+                if (matrix[l][c].equals("H1")) this.matrix[l][c] = new Agent("[H1]", ElementKind.MAN);
+                if (matrix[l][c].equals("W1")) this.matrix[l][c] = new Agent("[W1]", ElementKind.WOMAN);
             }
     } 
 
