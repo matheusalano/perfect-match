@@ -9,27 +9,26 @@ fun main(args: Array<String>) {
 
     val agents: ArrayList<Agent> = ArrayList()
 
-    val matrix = Matrix(matrixSize!!, numOfOffices)
-    matrix.addWallsAndOffices()
+    Matrix.instance.init(matrixSize!!, numOfOffices!!)
 
     for (i in 1..numOfCouples) { //MEN
         val input = readLine()?.split(' ')
         val inputInt = input!!.map {inpString -> inpString.toInt()}
-        val agent = Agent(inputInt[0], 'M', matrix.getAvailablePosition())
+        val agent = Agent(inputInt[0], 'M', Matrix.instance.getAvailablePosition())
         agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
         agents.add(agent)
-        matrix.addElement(agent, agent.position)
+        Matrix.instance.addElement(agent, agent.position)
     }
 
     for (i in 1..numOfCouples) { //WOMEN
         val input = readLine()?.split(' ')
         val inputInt = input!!.map {inpString -> inpString.toInt()}
-        val agent = Agent(inputInt[0], 'W', matrix.getAvailablePosition())
+        val agent = Agent(inputInt[0], 'W', Matrix.instance.getAvailablePosition())
         agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
         agents.add(agent)
-        matrix.addElement(agent, agent.position)
+        Matrix.instance.addElement(agent, agent.position)
     }
 
 
-    matrix.printMatrix()
+    Matrix.instance.printMatrix()
 }
