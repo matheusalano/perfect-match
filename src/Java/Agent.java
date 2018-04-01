@@ -1,6 +1,4 @@
 public class Agent extends Element {
-    private String name;
-    private ElementKind sex;
     private Boolean single;
     private int[] matchPreference;
     private Agent partner;
@@ -8,6 +6,12 @@ public class Agent extends Element {
     public Agent(String name, ElementKind sex, int[] matchPreference) {
         super(sex, name);
         this.matchPreference = matchPreference;
+        this.single = true;
+        partner = null;
+    }
+
+    public Agent(String name, ElementKind sex) {
+        super(sex, name);
         this.single = true;
         partner = null;
     }
