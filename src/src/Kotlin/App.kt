@@ -4,8 +4,11 @@ fun main(args: Array<String>) {
     println("Enter the matrix size:")
     val matrixSize = readLine()?.toInt()
 
-    val matrix = Matrix(matrixSize!!, 0)
+    println("Enter the number of offices:")
+    val numOfOffices = readLine()?.toInt()
 
-    matrix.addWalls()
+    val matrix = Matrix(matrixSize!!, numOfOffices!!)
+
+    matrix.addWallsAndOffices()
     matrix.printMatrix()
 }
