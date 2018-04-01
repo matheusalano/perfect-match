@@ -22,7 +22,6 @@ public enum ElementKind {
             case 6: sb.append("[RO]"); break;
             default: sb.append("Err"); break; //error
         }
-        sb.append("\n");
         return sb.toString();
     }
 
