@@ -12,6 +12,10 @@ public class Element {
         this.named = "";
     }
 
+    public Element getElement() {
+        return this;
+    }
+
     public ElementKind getKind() {
         return kind;
     }
