@@ -4,9 +4,11 @@ import javafx.geometry.Pos
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class Agent(kind: ElementKind, agentName: String, x: Int, y: Int) : Element(kind) {
-    val name = agentName
-    var position = Position(x, y)
+class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex == 'M') ElementKind.MAN else ElementKind.WOMAN) {
+    val id = agentID
+    val sex = agentSex
+    var position = pos
+    var matchPreference: Array<Int> = emptyArray()
 
 
     fun aStar(neighbors: Array<Position>, goal: Position): ArrayList<Position> {
