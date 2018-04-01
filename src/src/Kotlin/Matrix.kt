@@ -1,16 +1,29 @@
+@file:JvmName("Matrix")
+
 import kotlin.math.round
 
-class Matrix(size: Int, officeNum: Int) {
-    val matrix: Array<Array<Element>> = Array(size, {_ -> Array(size, {_ -> Element(ElementKind.GROUND)}) })
-    val size = size
-    val numOfOffices = officeNum
+class Matrix private constructor() {
+    private var matrix: Array<Array<Element>> = emptyArray()
+    private var size = -1
+    private var numOfOffices = -1
 
-    fun addWallsAndOffices() {
+    companion object {
+        var instance: Matrix = Matrix()
+    }
+
+    fun init(size: Int, officeNum: Int) {
+        matrix = Array(size, {_ -> Array(size, {_ -> Element(ElementKind.GROUND)}) })
+        this.size = size
+        numOfOffices = officeNum
+        addWallsAndOffices()
+        instance = this
+    }
+
+    private fun addWallsAndOffices() {
         val wallsNum = round((size.toDouble() / 5.0) + 0.5)
         val wallHeight = size/2
         val posFactor = round(size / (wallsNum + 2) + 0.5)
         val officesPerWall = numOfOffices / wallsNum
-        var officesLeft = numOfOffices
 
         for(i in 1..wallsNum.toInt()) {
             var firstCell = Util.rand(2, (size/2 - 2))
@@ -49,13 +62,29 @@ class Matrix(size: Int, officeNum: Int) {
     }
 
     fun getAvailablePosition() : Position {
-        var x = 0
-        var y = 0
+        var x: Int
+        var y: Int
         do {
             x = Util.rand(0, size - 1)
             y = Util.rand(0, size - 1)
         } while (matrix[x][y].kind != ElementKind.GROUND)
         return Position(x, y)
+    }
+
+    fun getNeighbors(position: Position, radius: Int = 1, onlyGround: Boolean = false) : Array<Element> {
+        val neighbors: ArrayList<Element> = ArrayList()
+
+        val rangeX = IntRange(position.x - radius, position.x + radius)
+        val rangeY = IntRange(position.y - radius, position.y + radius)
+        for (x in rangeX) {
+            for (y in rangeY) {
+                if (x == position.x && y == position.y) continue
+                if (onlyGround && matrix[x][y].kind != ElementKind.GROUND) continue
+
+                neighbors.add(matrix[x][y])
+            }
+        }
+        return neighbors.toTypedArray()
     }
 
     fun printMatrix() {
