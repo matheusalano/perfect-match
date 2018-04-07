@@ -1,25 +1,28 @@
 @file:JvmName("Matrix")
 
+import javafx.geometry.Pos
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.round
 
 class Matrix private constructor() {
     private var matrix: Array<Array<Element>> = emptyArray()
-    private var size = -1
-    private var numOfOffices = -1
+    var size = -1
+    private set
+    var registryOffices : ArrayList<Element> = ArrayList()
 
     companion object {
         var instance: Matrix = Matrix()
     }
 
     fun init(size: Int, officeNum: Int) {
-        matrix = Array(size, {_ -> Array(size, {_ -> Element(ElementKind.GROUND)}) })
+        matrix = Array(size, {x -> Array(size, {y -> Element(ElementKind.GROUND, Position(x, y))}) })
         this.size = size
-        numOfOffices = officeNum
-        addWallsAndOffices()
+        addWallsAndOffices(officeNum)
         instance = this
     }
 
-    private fun addWallsAndOffices() {
+    private fun addWallsAndOffices(numOfOffices: Int) {
         val wallsNum = round((size.toDouble() / 5.0) + 0.5)
         val wallHeight = size/2
         val posFactor = round(size / (wallsNum + 2) + 0.5)
@@ -30,7 +33,7 @@ class Matrix private constructor() {
             val wallX = firstCell
             val wallY = posFactor * i
             for (j in 1..wallHeight) {
-                matrix[firstCell][wallY.toInt()] = Element(ElementKind.WALL)
+                matrix[firstCell][wallY.toInt()] = Element(ElementKind.WALL, Position(firstCell, wallY.toInt()))
                 firstCell++
             }
 
@@ -52,7 +55,9 @@ class Matrix private constructor() {
                     x = (wallX + officePosY)
                 } while(matrix[x][y].kind == ElementKind.REGISTRY_OFFICE)
 
-                matrix[x][y] = Element(ElementKind.REGISTRY_OFFICE)
+                val office = Element(ElementKind.REGISTRY_OFFICE, Position(x, y))
+                registryOffices.add(office)
+                matrix[x][y] = office
             }
         }
     }
@@ -71,11 +76,20 @@ class Matrix private constructor() {
         return Position(x, y)
     }
 
+    fun isAvailable(pos: Position) : Boolean {
+        return matrix[pos.x][pos.y].kind == ElementKind.GROUND
+    }
+
+    fun updatePosition(element: Element, old: Position) {
+        matrix[element.position.x][element.position.y] = element
+        matrix[old.x][old.y] = Element(ElementKind.GROUND, Position(old.x, old.y))
+    }
+
     fun getNeighbors(position: Position, radius: Int = 1, onlyGround: Boolean = false) : Array<Element> {
         val neighbors: ArrayList<Element> = ArrayList()
 
-        val rangeX = IntRange(position.x - radius, position.x + radius)
-        val rangeY = IntRange(position.y - radius, position.y + radius)
+        val rangeX = IntRange(max(position.x - radius, 0), min(position.x + radius, size - 1))
+        val rangeY = IntRange(max(position.y - radius, 0), min(position.y + radius, size - 1))
         for (x in rangeX) {
             for (y in rangeY) {
                 if (x == position.x && y == position.y) continue

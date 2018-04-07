@@ -1,14 +1,18 @@
+
 public class Element {
     private String named;
     private ElementKind kind;
+    private Position position;
 
-    public Element(ElementKind kind, String named) {
+    public Element(ElementKind kind, Position position, String named) {
         this.kind = kind;
+        this.position = position;
         this.named = named;
     }
 
-    public Element(ElementKind kind) {
+    public Element(ElementKind kind, Position position) {
         this.kind = kind;
+        this.position = position;
         this.named = "";
     }
 
@@ -18,6 +22,12 @@ public class Element {
 
     public ElementKind getKind() {
         return kind;
+    }
+
+    public Position getPosition() { return position; }
+
+    public void setPosition(Position position) {
+        this.position = position;
     }
 
     public String getSymbol() {

@@ -29,6 +29,16 @@ fun main(args: Array<String>) {
         Matrix.instance.addElement(agent, agent.position)
     }
 
+    Matrix.instance.printMatrix()
 
+    var round = 0
+
+    while (round < 100) {
+        agents.forEach { agent ->
+            agent.walk()
+        }
+        round++
+    }
+    println("")
     Matrix.instance.printMatrix()
 }
