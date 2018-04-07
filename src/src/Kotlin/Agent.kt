@@ -8,10 +8,10 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
 
     private fun nextPosition() : Position {
         return when (direction) {
-            Direction.NORTH -> Position(this.position.x, this.position.y - 1)
-            Direction.SOUTH -> Position(this.position.x, this.position.y + 1)
-            Direction.WEST -> Position(this.position.x - 1, this.position.y)
-            Direction.EAST -> Position(this.position.x + 1, this.position.y)
+            Direction.NORTH -> Position(this.position.x - 1, this.position.y)
+            Direction.SOUTH -> Position(this.position.x + 1, this.position.y)
+            Direction.WEST -> Position(this.position.x, this.position.y - 1)
+            Direction.EAST -> Position(this.position.x, this.position.y + 1)
         }
     }
 
@@ -20,11 +20,11 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
         var done = false
 
         while (!done) {
-            if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0) {
-                direction = direction.getOposite()
+            if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0) {
+                direction = if (Util.rand(0,10) < 9) direction.getOposite() else direction.turnRight()
                 newPos = nextPosition()
-            } else if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0 || !Matrix.instance.isAvailable(newPos)) {
-                direction = direction.turnRight()
+            } else if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0 || !Matrix.instance.isAvailable(newPos)) {
+                direction = if (Util.rand(0,10) < 5) direction.turnRight() else direction.turnLeft()
                 newPos = nextPosition()
             } else {
                 done = true

@@ -29,10 +29,16 @@ fun main(args: Array<String>) {
         Matrix.instance.addElement(agent, agent.position)
     }
 
-
     Matrix.instance.printMatrix()
 
-    println("From [${agents[0].position.x}, ${agents[0].position.y}]")
-    println("To [${Matrix.instance.registryOffices[0].position.x}, ${Matrix.instance.registryOffices[0].position.y}]")
-    println(agents[0].aStar(Matrix.instance.registryOffices[0].position).toString())
+    var round = 0
+
+    while (round < 100) {
+        agents.forEach { agent ->
+            agent.walk()
+        }
+        round++
+    }
+    println("")
+    Matrix.instance.printMatrix()
 }
