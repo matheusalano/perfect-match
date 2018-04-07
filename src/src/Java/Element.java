@@ -1,4 +1,3 @@
-import javafx.geometry.Pos;
 
 public class Element {
     private String named;
@@ -26,6 +25,10 @@ public class Element {
     }
 
     public Position getPosition() { return position; }
+
+    public void setPosition(Position position) {
+        this.position = position;
+    }
 
     public String getSymbol() {
         StringBuilder sb = new StringBuilder();

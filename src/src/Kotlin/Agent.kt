@@ -1,12 +1,40 @@
 @file:JvmName("Agent")
 
-import kotlin.math.pow
-import kotlin.math.sqrt
-
 class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex == 'M') ElementKind.MAN else ElementKind.WOMAN, pos, "[$agentSex$agentID]") {
     val id = agentID
     val sex = agentSex
+    var direction = Direction.EAST
     var matchPreference: Array<Int> = emptyArray()
+
+    private fun nextPosition() : Position {
+        return when (direction) {
+            Direction.NORTH -> Position(this.position.x, this.position.y - 1)
+            Direction.SOUTH -> Position(this.position.x, this.position.y + 1)
+            Direction.WEST -> Position(this.position.x - 1, this.position.y)
+            Direction.EAST -> Position(this.position.x + 1, this.position.y)
+        }
+    }
+
+    fun walk() {
+        var newPos = nextPosition()
+        var done = false
+
+        while (!done) {
+            if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0) {
+                direction = direction.getOposite()
+                newPos = nextPosition()
+            } else if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0 || !Matrix.instance.isAvailable(newPos)) {
+                direction = direction.turnRight()
+                newPos = nextPosition()
+            } else {
+                done = true
+            }
+        }
+        val oldPosition = position
+        position = nextPosition()
+        Matrix.instance.updatePosition(this, oldPosition)
+    }
+
 
 
     fun aStar(goal: Position): ArrayList<Position> {
@@ -29,7 +57,7 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
 
                 if(!costSoFar.containsKey(next) || newCost < costSoFar[next]!!) {
                     costSoFar[next] = newCost
-                    val prio = newCost + heuristic(goal, next)
+                    val prio = newCost + Util.heuristic(goal, next)
                     frontier.put(next, prio)
                     cameFrom[next] = current
                 }
@@ -42,9 +70,5 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
             path.add(currPos)
         } while (currPos != position)
         return path
-    }
-
-    private fun heuristic(goal: Position, current: Position) : Double {
-        return sqrt((goal.x - current.x).toDouble().pow(2) + (goal.y - current.y).toDouble().pow(2))
     }
 }

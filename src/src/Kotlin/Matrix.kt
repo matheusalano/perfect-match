@@ -1,12 +1,14 @@
 @file:JvmName("Matrix")
 
+import javafx.geometry.Pos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
 class Matrix private constructor() {
     private var matrix: Array<Array<Element>> = emptyArray()
-    private var size = -1
+    var size = -1
+    private set
     var registryOffices : ArrayList<Element> = ArrayList()
 
     companion object {
@@ -72,6 +74,15 @@ class Matrix private constructor() {
             y = Util.rand(0, size - 1)
         } while (matrix[x][y].kind != ElementKind.GROUND)
         return Position(x, y)
+    }
+
+    fun isAvailable(pos: Position) : Boolean {
+        return matrix[pos.x][pos.y].kind == ElementKind.GROUND
+    }
+
+    fun updatePosition(element: Element, old: Position) {
+        matrix[element.position.x][element.position.y] = element
+        matrix[old.x][old.y] = Element(ElementKind.GROUND, Position(old.x, old.y))
     }
 
     fun getNeighbors(position: Position, radius: Int = 1, onlyGround: Boolean = false) : Array<Element> {
