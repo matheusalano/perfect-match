@@ -1,17 +1,15 @@
 @file:JvmName("Agent")
 
-import javafx.geometry.Pos
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex == 'M') ElementKind.MAN else ElementKind.WOMAN) {
+class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex == 'M') ElementKind.MAN else ElementKind.WOMAN, pos, "[$agentSex$agentID]") {
     val id = agentID
     val sex = agentSex
-    var position = pos
     var matchPreference: Array<Int> = emptyArray()
 
 
-    fun aStar(neighbors: Array<Position>, goal: Position): ArrayList<Position> {
+    fun aStar(goal: Position): ArrayList<Position> {
         val frontier = PriorityQueue<Position>()
         frontier.put(position, 0.0)
         val cameFrom: HashMap<Position, Position?> = HashMap()
@@ -24,8 +22,10 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
 
             if (current == goal) break
 
-            for(next in neighbors) { //Matrix.sharedInstance.getNeighbors(current)
-                val newCost = (costSoFar[current] ?: 0.0) + 1
+            Matrix.instance.getNeighbors(current).forEach { nextElement ->
+                if (nextElement.position != goal && nextElement.kind != ElementKind.GROUND) return@forEach
+                val next = nextElement.position
+                val newCost = (costSoFar[current]!!) + 1
 
                 if(!costSoFar.containsKey(next) || newCost < costSoFar[next]!!) {
                     costSoFar[next] = newCost
@@ -36,9 +36,9 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
             }
         }
         val path: ArrayList<Position> = ArrayList()
-        var currPos: Position
+        var currPos = goal
         do {
-            currPos = cameFrom[goal]!!
+            currPos = cameFrom[currPos]!!
             path.add(currPos)
         } while (currPos != position)
         return path

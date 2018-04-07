@@ -31,4 +31,8 @@ fun main(args: Array<String>) {
 
 
     Matrix.instance.printMatrix()
+
+    println("From [${agents[0].position.x}, ${agents[0].position.y}]")
+    println("To [${Matrix.instance.registryOffices[0].position.x}, ${Matrix.instance.registryOffices[0].position.y}]")
+    println(agents[0].aStar(Matrix.instance.registryOffices[0].position).toString())
 }
