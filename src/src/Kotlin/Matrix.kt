@@ -10,6 +10,8 @@ class Matrix private constructor() {
     var size = -1
     private set
     var registryOffices : ArrayList<Element> = ArrayList()
+    var agents : ArrayList<Agent> = ArrayList()
+    private set
 
     companion object {
         var instance: Matrix = Matrix()
@@ -62,8 +64,28 @@ class Matrix private constructor() {
         }
     }
 
-    fun addElement(element: Element, pos: Position) {
-        matrix[pos.x][pos.y] = element
+    fun addAgent(agent: Agent, pos: Position) {
+        agents.add(agent)
+        matrix[pos.x][pos.y] = agent
+    }
+
+    fun getCoupleByID(id: Int) : Couple? {
+        val agent = agents.find { it.kind == ElementKind.COUPLE && it.id == id }
+        return agent as? Couple
+    }
+
+    fun updateAgentStateByID(id: Int, state: AgentState, isCouple: Boolean = false) {
+        for (i in agents.indices) {
+            if (agents[i].id == id) {
+                if (isCouple && agents[i] is Couple) {
+                    agents[i].state = state
+                    return
+                } else if (!isCouple && agents[i] !is Couple) {
+                    agents[i].state = state
+                    return
+                }
+            }
+        }
     }
 
     fun getAvailablePosition() : Position {
@@ -83,6 +105,15 @@ class Matrix private constructor() {
     fun updatePosition(element: Element, old: Position) {
         matrix[element.position.x][element.position.y] = element
         matrix[old.x][old.y] = Element(ElementKind.GROUND, Position(old.x, old.y))
+    }
+
+    fun getNearestOfficeFrom(position: Position) : Element {
+        var nearestOffice = registryOffices[0]
+
+        registryOffices.forEach { office ->
+            if (Util.heuristic(office.position, position) < Util.heuristic(nearestOffice.position, position)) nearestOffice = office
+        }
+        return nearestOffice
     }
 
     fun getNeighbors(position: Position, radius: Int = 1, onlyGround: Boolean = false) : Array<Element> {

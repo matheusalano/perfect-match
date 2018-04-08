@@ -7,8 +7,6 @@ fun main(args: Array<String>) {
     val numOfCouples = coupleAndOffices!![0].toInt()
     val numOfOffices = coupleAndOffices!![1].toInt()
 
-    val agents: ArrayList<Agent> = ArrayList()
-
     Matrix.instance.init(matrixSize!!, numOfOffices!!)
 
     for (i in 1..numOfCouples) { //MEN
@@ -16,8 +14,7 @@ fun main(args: Array<String>) {
         val inputInt = input!!.map {inpString -> inpString.toInt()}
         val agent = Agent(inputInt[0], ElementKind.MAN, Matrix.instance.getAvailablePosition())
         agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
-        agents.add(agent)
-        Matrix.instance.addElement(agent, agent.position)
+        Matrix.instance.addAgent(agent, agent.position)
     }
 
     for (i in 1..numOfCouples) { //WOMEN
@@ -25,8 +22,7 @@ fun main(args: Array<String>) {
         val inputInt = input!!.map {inpString -> inpString.toInt()}
         val agent = Agent(inputInt[0], ElementKind.WOMAN, Matrix.instance.getAvailablePosition())
         agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
-        agents.add(agent)
-        Matrix.instance.addElement(agent, agent.position)
+        Matrix.instance.addAgent(agent, agent.position)
     }
 
     Matrix.instance.printMatrix()
@@ -34,11 +30,13 @@ fun main(args: Array<String>) {
     var round = 0
 
     while (round < 100) {
+        val agents = Matrix.instance.agents
         agents.forEach { agent ->
-            agent.walk()
+            agent.action()
         }
         round++
+        Thread.sleep(1_000)
+        val waitFor = ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor() //Clear windows CMD
+        Matrix.instance.printMatrix()
     }
-    println("")
-    Matrix.instance.printMatrix()
 }
