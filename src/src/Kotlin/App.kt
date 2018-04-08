@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
     for (i in 1..numOfCouples) { //MEN
         val input = readLine()?.split(' ')
         val inputInt = input!!.map {inpString -> inpString.toInt()}
-        val agent = Agent(inputInt[0], 'M', Matrix.instance.getAvailablePosition())
+        val agent = Agent(inputInt[0], ElementKind.MAN, Matrix.instance.getAvailablePosition())
         agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
         agents.add(agent)
         Matrix.instance.addElement(agent, agent.position)
@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
     for (i in 1..numOfCouples) { //WOMEN
         val input = readLine()?.split(' ')
         val inputInt = input!!.map {inpString -> inpString.toInt()}
-        val agent = Agent(inputInt[0], 'W', Matrix.instance.getAvailablePosition())
+        val agent = Agent(inputInt[0], ElementKind.WOMAN, Matrix.instance.getAvailablePosition())
         agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
         agents.add(agent)
         Matrix.instance.addElement(agent, agent.position)

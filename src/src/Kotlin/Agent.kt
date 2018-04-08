@@ -1,9 +1,8 @@
 @file:JvmName("Agent")
 
-class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex == 'M') ElementKind.MAN else ElementKind.WOMAN, pos, "[$agentSex$agentID]") {
+open class Agent(agentID: Int?, agentSex: ElementKind, pos: Position) : Element(agentSex, pos, "[${agentSex.symbol}${agentID ?: ""}]"){
     val id = agentID
-    val sex = agentSex
-    var direction = Direction.EAST
+    private var direction = Direction.EAST
     var matchPreference: Array<Int> = emptyArray()
 
     private fun nextPosition() : Position {
