@@ -69,18 +69,39 @@ class Matrix private constructor() {
         matrix[pos.x][pos.y] = agent
     }
 
-    fun getCoupleByID(id: Int) : Couple? {
-        val agent = agents.find { it.kind == ElementKind.COUPLE && it.id == id }
-        return agent as? Couple
+    fun removeAgent(agentID: Int, isCouple: Boolean) {
+        for (i in agents.indices) {
+            if (agents[i].id == agentID) {
+                if (isCouple && agents[i].kind == ElementKind.COUPLE) {
+                    val position = agents[i].position
+                    matrix[position.x][position.y] = Element(ElementKind.GROUND, Position(position.x, position.y))
+                    return
+                } else if (!isCouple && agents[i].kind != ElementKind.COUPLE) {
+                    val position = agents[i].position
+                    matrix[position.x][position.y] = Element(ElementKind.GROUND, Position(position.x, position.y))
+                    return
+                }
+            }
+        }
+    }
+
+    fun getAgentByID(agentID: Int, isCouple: Boolean) : Agent? {
+        for (i in agents.indices) {
+            if (agents[i].id == agentID) {
+                if (isCouple && agents[i].kind == ElementKind.COUPLE) return agents[i]
+                else if (!isCouple && agents[i].kind != ElementKind.COUPLE) return agents[i]
+            }
+        }
+        return null
     }
 
     fun updateAgentStateByID(id: Int, state: AgentState, isCouple: Boolean = false) {
         for (i in agents.indices) {
             if (agents[i].id == id) {
-                if (isCouple && agents[i] is Couple) {
+                if (isCouple && agents[i].kind == ElementKind.COUPLE) {
                     agents[i].state = state
                     return
-                } else if (!isCouple && agents[i] !is Couple) {
+                } else if (!isCouple && agents[i].kind != ElementKind.COUPLE) {
                     agents[i].state = state
                     return
                 }

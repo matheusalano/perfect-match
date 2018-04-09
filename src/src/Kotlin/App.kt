@@ -32,7 +32,13 @@ fun main(args: Array<String>) {
     while (round < 100) {
         val agents = Matrix.instance.agents
         agents.forEach { agent ->
-            agent.action()
+            if (agent.state == AgentState.AT_OFFICE) {
+                if (Matrix.instance.getAgentByID(agent.newPartnerID!!, agent.newPartnerKind!! == ElementKind.COUPLE)!!.state == AgentState.AT_OFFICE) {
+
+                }
+            } else {
+                agent.action()
+            }
         }
         round++
         Thread.sleep(1_000)

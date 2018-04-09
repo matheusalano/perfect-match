@@ -1,6 +1,6 @@
 @file:JvmName("Agent")
 
-open class Agent(agentID: Int?, agentSex: ElementKind, pos: Position) : Element(agentSex, pos, "[${agentSex.symbol}${agentID ?: ""}]"){
+open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(agentSex, pos, "[${agentSex.symbol}${agentID ?: ""}]"){
     val id = agentID
     private var direction = Direction.EAST
     var matchPreference: Array<Int> = emptyArray()
@@ -80,9 +80,9 @@ open class Agent(agentID: Int?, agentSex: ElementKind, pos: Position) : Element(
             var betterPartnerFound = false
             if (newPartnerKind == ElementKind.COUPLE) {
                 if (oppositeSex == ElementKind.MAN) {
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(Matrix.instance.getCoupleByID(newPartnerID!!)!!.husband.id)) betterPartnerFound = true
+                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(Matrix.instance.getAgentByID(newPartnerID!!, true)!!.husband.id)) betterPartnerFound = true
                 } else {
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(Matrix.instance.getCoupleByID(newPartnerID!!)!!.wife.id)) betterPartnerFound = true
+                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(Matrix.instance.getAgentByID(newPartnerID!!, true)!!.wife.id)) betterPartnerFound = true
                 }
             } else if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
 
