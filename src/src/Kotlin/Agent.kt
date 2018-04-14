@@ -6,6 +6,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     var matchPreference: Array<Int> = emptyArray()
     var state = AgentState.WALKING
     internal var officePath: ArrayList<Position> = ArrayList()
+    internal var officeGoal: Position? = null
     private val oppositeSex = if (kind == ElementKind.MAN) ElementKind.WOMAN else ElementKind.MAN
     internal open var newPartnerID: Int? = null
     internal open var newPartnerKind: ElementKind? = null
@@ -24,10 +25,15 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
             if (!checkNeighborhood()) walk()
         } else if (state == AgentState.GOING_TO_OFFICE) {
             if (officePath.isEmpty()) state = AgentState.AT_OFFICE
-            else if (Matrix.instance.isAvailable(officePath[0])) {
+            else if (Matrix.instance.isAvailable(officePath.last())) {
                 val oldPosition = position
-                position = officePath.removeAt(0)
+                position = officePath.removeAt(officePath.lastIndex)
                 Matrix.instance.updatePosition(this, oldPosition)
+            } else {
+                val elem = Matrix.instance.getElementByPosition(officePath.last())
+                if (elem is Agent && elem.state == AgentState.AT_OFFICE) {
+                    aStar(officeGoal!!)
+                }
             }
         }
     }
@@ -76,18 +82,21 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     }
 
     open fun receiveProposalFrom(agent: Agent) : Boolean {
+        println("${agent.symbol} proposed to ${this.symbol}")
         if (newPartnerID != null) {
             var betterPartnerFound = false
             if (newPartnerKind == ElementKind.COUPLE) {
                 if (oppositeSex == ElementKind.MAN) {
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(Matrix.instance.getAgentByID(newPartnerID!!, true)!!.husband.id)) betterPartnerFound = true
+                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
+                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.husband.id)) betterPartnerFound = true
                 } else {
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(Matrix.instance.getAgentByID(newPartnerID!!, true)!!.wife.id)) betterPartnerFound = true
+                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
+                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.wife.id)) betterPartnerFound = true
                 }
             } else if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
 
             if (betterPartnerFound) {
-                Matrix.instance.updateAgentStateByID(newPartnerID!!, AgentState.WALKING, newPartnerKind == ElementKind.COUPLE)
+                Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
                 newPartnerID = agent.id
                 newPartnerKind = agent.kind
                 val office = Matrix.instance.getNearestOfficeFrom(agent.position)
@@ -105,10 +114,9 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     }
 
     fun aStar(goal: Position) {
-        if (state == AgentState.WALKING) {
-            state = AgentState.GOING_TO_OFFICE
-            officePath = aStarPath(goal)
-        }
+        state = AgentState.GOING_TO_OFFICE
+        officeGoal = goal
+        officePath = aStarPath(goal)
     }
 
     private fun aStarPath(goal: Position): ArrayList<Position> {
@@ -139,10 +147,12 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         }
         val path: ArrayList<Position> = ArrayList()
         var currPos = goal
-        do {
+
+        while (currPos != position) {
             currPos = cameFrom[currPos]!!
+            if (currPos == position) break
             path.add(currPos)
-        } while (currPos != position)
+        }
         return path
     }
 }

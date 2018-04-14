@@ -16,7 +16,7 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
             }
 
             if (betterPartnerFound) {
-                Matrix.instance.updateAgentStateByID(newPartnerID!!, AgentState.WALKING, false)
+                Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
                 newPartnerID = agent.id
                 newPartnerKind = agent.kind
                 val office = Matrix.instance.getNearestOfficeFrom(agent.position)
@@ -50,11 +50,20 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
             walk()
         } else if (state == AgentState.GOING_TO_OFFICE) {
             if (officePath.isEmpty()) state = AgentState.AT_OFFICE
-            else if (Matrix.instance.isAvailable(officePath[0])) {
+            else if (Matrix.instance.isAvailable(officePath.last())) {
                 val oldPosition = position
-                position = officePath.removeAt(0)
+                position = officePath.removeAt(officePath.lastIndex)
                 Matrix.instance.updatePosition(this, oldPosition)
+            } else {
+                val elem = Matrix.instance.getElementByPosition(officePath.last())
+                if (elem is Agent && elem.state == AgentState.AT_OFFICE) {
+                    aStar(officeGoal!!)
+                }
             }
         }
+    }
+
+    override fun getSymbol(): String {
+        return "[Co]"
     }
 }

@@ -24,45 +24,45 @@ class Util {
             if (agent1 is Couple && agent2.kind == ElementKind.MAN) {
                 val couple = Couple(agent2, agent1.wife, agent2.position)
 
-                Matrix.instance.removeAgent(agent1.id, true)
+                Matrix.instance.removeAgent(agent1)
                 agent1.husband.position = agent1.position
                 Matrix.instance.addAgent(agent1.husband, agent1.position)
-                Matrix.instance.removeAgent(agent2.id, false)
+                Matrix.instance.removeAgent(agent2)
                 Matrix.instance.addAgent(couple, agent2.position)
             } else if (agent1 is Couple && agent2.kind == ElementKind.WOMAN) {
                 val couple = Couple(agent1.husband, agent2, agent2.position)
 
-                Matrix.instance.removeAgent(agent1.id, true)
+                Matrix.instance.removeAgent(agent1)
                 agent1.wife.position = agent1.position
                 Matrix.instance.addAgent(agent1.wife, agent1.position)
-                Matrix.instance.removeAgent(agent2.id, false)
+                Matrix.instance.removeAgent(agent2)
                 Matrix.instance.addAgent(couple, agent2.position)
             } else if (agent2 is Couple && agent1.kind == ElementKind.MAN) {
                 val couple = Couple(agent1, agent2.wife, agent1.position)
 
-                Matrix.instance.removeAgent(agent2.id, true)
+                Matrix.instance.removeAgent(agent2)
                 agent2.husband.position = agent2.position
                 Matrix.instance.addAgent(agent2.husband, agent2.position)
-                Matrix.instance.removeAgent(agent1.id, false)
+                Matrix.instance.removeAgent(agent1)
                 Matrix.instance.addAgent(couple, agent1.position)
             } else if (agent2 is Couple && agent2.kind == ElementKind.WOMAN) {
                 val couple = Couple(agent2.husband, agent1, agent1.position)
 
-                Matrix.instance.removeAgent(agent2.id, true)
+                Matrix.instance.removeAgent(agent2)
                 agent2.wife.position = agent2.position
                 Matrix.instance.addAgent(agent2.wife, agent2.position)
-                Matrix.instance.removeAgent(agent1.id, false)
+                Matrix.instance.removeAgent(agent1)
                 Matrix.instance.addAgent(couple, agent1.position)
             } else {
                 if (agent1.kind == ElementKind.MAN) {
                     val couple = Couple(agent1, agent2, agent1.position)
-                    Matrix.instance.removeAgent(agent1.id, false)
-                    Matrix.instance.removeAgent(agent2.id, false)
+                    Matrix.instance.removeAgent(agent1)
+                    Matrix.instance.removeAgent(agent2)
                     Matrix.instance.addAgent(couple, agent1.position)
                 } else {
                     val couple = Couple(agent2, agent1, agent2.position)
-                    Matrix.instance.removeAgent(agent2.id, false)
-                    Matrix.instance.removeAgent(agent1.id, false)
+                    Matrix.instance.removeAgent(agent2)
+                    Matrix.instance.removeAgent(agent1)
                     Matrix.instance.addAgent(couple, agent2.position)
                 }
             }

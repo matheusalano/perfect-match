@@ -30,11 +30,13 @@ fun main(args: Array<String>) {
     var round = 0
 
     while (round < 100) {
-        val agents = Matrix.instance.agents
+        val agents = Matrix.instance.agents.clone() as ArrayList<Agent>
         agents.forEach { agent ->
+            if (!Matrix.instance.agents.contains(agent)) return@forEach
             if (agent.state == AgentState.AT_OFFICE) {
-                if (Matrix.instance.getAgentByID(agent.newPartnerID!!, agent.newPartnerKind!! == ElementKind.COUPLE)!!.state == AgentState.AT_OFFICE) {
-
+                val partnerAgent = Matrix.instance.getAgentByID(agent.newPartnerID!!, agent.newPartnerKind!!)!!
+                if (partnerAgent.state == AgentState.AT_OFFICE) {
+                    Util.registryOffice(agent, partnerAgent)
                 }
             } else {
                 agent.action()
