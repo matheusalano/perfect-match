@@ -44,7 +44,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
 
         while (!done) {
             if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0) {
-                direction = if (Util.rand(0,10) < 9) direction.getOposite() else direction.turnRight()
+                direction = if (Util.rand(0,10) < 8) direction.getOposite() else direction.turnRight()
                 newPos = nextPosition()
             } else if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0 || !Matrix.instance.isAvailable(newPos)) {
                 direction = if (Util.rand(0,10) < 5) direction.turnRight() else direction.turnLeft()
@@ -58,7 +58,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         Matrix.instance.updatePosition(this, oldPosition)
     }
 
-    private fun checkNeighborhood() : Boolean {
+    open fun checkNeighborhood() : Boolean {
         val neighbors = Matrix.instance.getNeighbors(position, 2, false).filter {it.kind == ElementKind.COUPLE || it.kind == oppositeSex}
         val sortedNeighbors = neighbors.map { it as Agent }.sortedBy {
             if (it is Couple) {
@@ -82,7 +82,6 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     }
 
     open fun receiveProposalFrom(agent: Agent) : Boolean {
-        println("${agent.symbol} proposed to ${this.symbol}")
         if (newPartnerID != null) {
             var betterPartnerFound = false
             if (newPartnerKind == ElementKind.COUPLE) {

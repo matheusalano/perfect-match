@@ -1,6 +1,5 @@
 @file:JvmName("Matrix")
 
-import javafx.geometry.Pos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
@@ -65,6 +64,9 @@ class Matrix private constructor() {
     }
 
     fun addAgent(agent: Agent, pos: Position) {
+        agent.state = AgentState.WALKING
+        agent.newPartnerID = null
+        agent.newPartnerKind = null
         agents.add(agent)
         matrix[pos.x][pos.y] = agent
     }
@@ -93,6 +95,8 @@ class Matrix private constructor() {
         for (i in agents.indices) {
             if (agents[i].id == id && agents[i].kind == kind) {
                 agents[i].state = state
+                agents[i].newPartnerKind = null
+                agents[i].newPartnerID = null
                 return
             }
         }
@@ -153,6 +157,15 @@ class Matrix private constructor() {
                 print(" ")
             }
             println("")
+        }
+    }
+    
+    fun printCouples() {
+        println("Couples:")
+        agents.forEach { agent ->
+            if (agent is Couple) {
+                println("Couple ${agent.id}: Husband ${agent.husband.symbol} and Wife ${agent.wife.symbol}")
+            }
         }
     }
 }

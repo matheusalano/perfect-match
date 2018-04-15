@@ -29,10 +29,10 @@ fun main(args: Array<String>) {
 
     var round = 0
 
-    while (round < 100) {
+    while (round < 1000) {
         val agents = Matrix.instance.agents.clone() as ArrayList<Agent>
         agents.forEach { agent ->
-            if (!Matrix.instance.agents.contains(agent)) return@forEach
+            if (Matrix.instance.getAgentByID(agent.id, agent.kind) == null) return@forEach
             if (agent.state == AgentState.AT_OFFICE) {
                 val partnerAgent = Matrix.instance.getAgentByID(agent.newPartnerID!!, agent.newPartnerKind!!)!!
                 if (partnerAgent.state == AgentState.AT_OFFICE) {
@@ -43,8 +43,9 @@ fun main(args: Array<String>) {
             }
         }
         round++
-        Thread.sleep(1_000)
-        val waitFor = ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor() //Clear windows CMD
-        Matrix.instance.printMatrix()
+//        Thread.sleep(1_000)
+//        val waitFor = ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor() //Clear windows CMD
+//        Matrix.instance.printMatrix()
     }
+    Matrix.instance.printCouples()
 }
