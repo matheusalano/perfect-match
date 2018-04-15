@@ -1,6 +1,5 @@
 @file:JvmName("Matrix")
 
-import javafx.geometry.Pos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
@@ -10,6 +9,8 @@ class Matrix private constructor() {
     var size = -1
     private set
     var registryOffices : ArrayList<Element> = ArrayList()
+    var agents : ArrayList<Agent> = ArrayList()
+    private set
 
     companion object {
         var instance: Matrix = Matrix()
@@ -62,8 +63,43 @@ class Matrix private constructor() {
         }
     }
 
-    fun addElement(element: Element, pos: Position) {
-        matrix[pos.x][pos.y] = element
+    fun addAgent(agent: Agent, pos: Position) {
+        agent.state = AgentState.WALKING
+        agent.newPartnerID = null
+        agent.newPartnerKind = null
+        agents.add(agent)
+        matrix[pos.x][pos.y] = agent
+    }
+
+    fun removeAgent(agent: Agent) {
+        for (i in agents.indices) {
+            if (agents[i].id == agent.id && agents[i].kind == agent.kind) {
+                val position = agents[i].position
+                matrix[position.x][position.y] = Element(ElementKind.GROUND, Position(position.x, position.y))
+                agents.removeAt(i)
+                return
+            }
+        }
+    }
+
+    fun getAgentByID(agentID: Int, agentKind: ElementKind) : Agent? {
+        for (i in agents.indices) {
+            if (agents[i].id == agentID && agents[i].kind == agentKind) {
+                return agents[i]
+            }
+        }
+        return null
+    }
+
+    fun updateAgentStateByID(id: Int, kind: ElementKind, state: AgentState) {
+        for (i in agents.indices) {
+            if (agents[i].id == id && agents[i].kind == kind) {
+                agents[i].state = state
+                agents[i].newPartnerKind = null
+                agents[i].newPartnerID = null
+                return
+            }
+        }
     }
 
     fun getAvailablePosition() : Position {
@@ -83,6 +119,19 @@ class Matrix private constructor() {
     fun updatePosition(element: Element, old: Position) {
         matrix[element.position.x][element.position.y] = element
         matrix[old.x][old.y] = Element(ElementKind.GROUND, Position(old.x, old.y))
+    }
+
+    fun getElementByPosition(pos: Position) : Element {
+        return matrix[pos.x][pos.y]
+    }
+
+    fun getNearestOfficeFrom(position: Position) : Element {
+        var nearestOffice = registryOffices[0]
+
+        registryOffices.forEach { office ->
+            if (Util.heuristic(office.position, position) < Util.heuristic(nearestOffice.position, position)) nearestOffice = office
+        }
+        return nearestOffice
     }
 
     fun getNeighbors(position: Position, radius: Int = 1, onlyGround: Boolean = false) : Array<Element> {
@@ -108,6 +157,15 @@ class Matrix private constructor() {
                 print(" ")
             }
             println("")
+        }
+    }
+    
+    fun printCouples() {
+        println("Couples:")
+        agents.forEach { agent ->
+            if (agent is Couple) {
+                println("Couple ${agent.id}: Husband ${agent.husband.symbol} and Wife ${agent.wife.symbol}")
+            }
         }
     }
 }

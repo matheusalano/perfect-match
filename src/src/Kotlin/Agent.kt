@@ -1,10 +1,15 @@
 @file:JvmName("Agent")
 
-class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex == 'M') ElementKind.MAN else ElementKind.WOMAN, pos, "[$agentSex$agentID]") {
+open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(agentSex, pos, "[${agentSex.symbol}${agentID ?: ""}]"){
     val id = agentID
-    val sex = agentSex
-    var direction = Direction.EAST
+    private var direction = Direction.EAST
     var matchPreference: Array<Int> = emptyArray()
+    var state = AgentState.WALKING
+    internal var officePath: ArrayList<Position> = ArrayList()
+    internal var officeGoal: Position? = null
+    private val oppositeSex = if (kind == ElementKind.MAN) ElementKind.WOMAN else ElementKind.MAN
+    internal open var newPartnerID: Int? = null
+    internal open var newPartnerKind: ElementKind? = null
 
     private fun nextPosition() : Position {
         return when (direction) {
@@ -15,13 +20,31 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
         }
     }
 
-    fun walk() {
+    open fun action() {
+        if (state == AgentState.WALKING) {
+            if (!checkNeighborhood()) walk()
+        } else if (state == AgentState.GOING_TO_OFFICE) {
+            if (officePath.isEmpty()) state = AgentState.AT_OFFICE
+            else if (Matrix.instance.isAvailable(officePath.last())) {
+                val oldPosition = position
+                position = officePath.removeAt(officePath.lastIndex)
+                Matrix.instance.updatePosition(this, oldPosition)
+            } else {
+                val elem = Matrix.instance.getElementByPosition(officePath.last())
+                if (elem is Agent && elem.state == AgentState.AT_OFFICE) {
+                    aStar(officeGoal!!)
+                }
+            }
+        }
+    }
+
+    internal fun walk() {
         var newPos = nextPosition()
         var done = false
 
         while (!done) {
             if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0) {
-                direction = if (Util.rand(0,10) < 9) direction.getOposite() else direction.turnRight()
+                direction = if (Util.rand(0,10) < 8) direction.getOposite() else direction.turnRight()
                 newPos = nextPosition()
             } else if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0 || !Matrix.instance.isAvailable(newPos)) {
                 direction = if (Util.rand(0,10) < 5) direction.turnRight() else direction.turnLeft()
@@ -35,9 +58,67 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
         Matrix.instance.updatePosition(this, oldPosition)
     }
 
+    open fun checkNeighborhood() : Boolean {
+        val neighbors = Matrix.instance.getNeighbors(position, 2, false).filter {it.kind == ElementKind.COUPLE || it.kind == oppositeSex}
+        val sortedNeighbors = neighbors.map { it as Agent }.sortedBy {
+            if (it is Couple) {
+                if (oppositeSex == ElementKind.WOMAN) matchPreference.indexOf(it.wife.id)
+                else matchPreference.indexOf(it.husband.id)
+            } else {
+                matchPreference.indexOf(it.id)
+            }
+        }
 
+        sortedNeighbors.forEach { agent  ->
+            if (agent.receiveProposalFrom(this)) {
+                newPartnerID = agent.id
+                newPartnerKind = agent.kind
+                val office = Matrix.instance.getNearestOfficeFrom(this.position)
+                aStar(office.position)
+                return true
+            }
+        }
+        return false
+    }
 
-    fun aStar(goal: Position): ArrayList<Position> {
+    open fun receiveProposalFrom(agent: Agent) : Boolean {
+        if (newPartnerID != null) {
+            var betterPartnerFound = false
+            if (newPartnerKind == ElementKind.COUPLE) {
+                if (oppositeSex == ElementKind.MAN) {
+                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
+                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.husband.id)) betterPartnerFound = true
+                } else {
+                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
+                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.wife.id)) betterPartnerFound = true
+                }
+            } else if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+
+            if (betterPartnerFound) {
+                Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
+                newPartnerID = agent.id
+                newPartnerKind = agent.kind
+                val office = Matrix.instance.getNearestOfficeFrom(agent.position)
+                aStar(office.position)
+                return true
+            }
+        } else {
+            newPartnerID = agent.id
+            newPartnerKind = agent.kind
+            val office = Matrix.instance.getNearestOfficeFrom(agent.position)
+            aStar(office.position)
+            return true
+        }
+        return false
+    }
+
+    fun aStar(goal: Position) {
+        state = AgentState.GOING_TO_OFFICE
+        officeGoal = goal
+        officePath = aStarPath(goal)
+    }
+
+    private fun aStarPath(goal: Position): ArrayList<Position> {
         val frontier = PriorityQueue<Position>()
         frontier.put(position, 0.0)
         val cameFrom: HashMap<Position, Position?> = HashMap()
@@ -65,10 +146,12 @@ class Agent(agentID: Int, agentSex: Char, pos: Position) : Element(if(agentSex =
         }
         val path: ArrayList<Position> = ArrayList()
         var currPos = goal
-        do {
+
+        while (currPos != position) {
             currPos = cameFrom[currPos]!!
+            if (currPos == position) break
             path.add(currPos)
-        } while (currPos != position)
+        }
         return path
     }
 }
