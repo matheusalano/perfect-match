@@ -3,17 +3,29 @@ import kotlin.math.min
 class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCoupleIndex(), ElementKind.COUPLE, position) {
     val husband = husband
     val wife = wife
+    val couplePreference = Util.getCouplePreference(husband, wife)!!
 
     override fun checkNeighborhood(): Boolean {
         val neighbors = Matrix.instance.getNeighbors(position, 2, false).filter {it is Agent}.map { it as Agent }
-        val sortedNeighbors = neighbors.sortedBy {
+        val filteredNeighbors = neighbors.filter {
             if (it is Couple) {
-                min(this.husband.matchPreference.indexOf(it.wife.id), this.wife.matchPreference.indexOf(it.husband.id))
+                couplePreference > min(Util.getCouplePreference(this.husband, it.wife)!!, Util.getCouplePreference(this.wife, it.husband)!!)
             } else {
                 if (it.kind == ElementKind.MAN) {
-                    this.wife.matchPreference.indexOf(it.id)
+                    couplePreference > this.wife.matchPreference.indexOf(it.id).toDouble()
                 } else {
-                    this.husband.matchPreference.indexOf(it.id)
+                    couplePreference > this.husband.matchPreference.indexOf(it.id).toDouble()
+                }
+            }
+        }
+        val sortedNeighbors = filteredNeighbors.sortedBy {
+            if (it is Couple) {
+                min(Util.getCouplePreference(this.husband, it.wife)!!, Util.getCouplePreference(this.wife, it.husband)!!)
+            } else {
+                if (it.kind == ElementKind.MAN) {
+                    this.wife.matchPreference.indexOf(it.id).toDouble()
+                } else {
+                    this.husband.matchPreference.indexOf(it.id).toDouble()
                 }
             }
         }

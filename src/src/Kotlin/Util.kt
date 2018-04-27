@@ -20,6 +20,11 @@ class Util {
             return currentCouple
         }
 
+        fun getCouplePreference(agent1: Agent, agent2: Agent): Double? {
+            if (agent1.kind == agent2.kind || agent1.kind == ElementKind.COUPLE || agent2.kind == ElementKind.COUPLE) return null
+            return (agent1.matchPreference.indexOf(agent2.id) + agent2.matchPreference.indexOf(agent1.id)) / 2.0
+        }
+
         fun registryOffice(agent1: Agent, agent2: Agent) {
             if (agent1 is Couple && agent2 is Couple) {
                 val couple1 = Couple(agent1.husband, agent2.wife, agent1.position)
