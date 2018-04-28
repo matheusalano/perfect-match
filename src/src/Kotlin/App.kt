@@ -1,27 +1,33 @@
 @file:JvmName("App")
 
+import java.io.File
+
 fun main(args: Array<String>) {
     println("Enter the matrix size:")
     val matrixSize = readLine()?.toInt()
-    val coupleAndOffices = readLine()?.split( ' ')
-    val numOfCouples = coupleAndOffices!![0].toInt()
-    val numOfOffices = coupleAndOffices!![1].toInt()
 
-    Matrix.instance.init(matrixSize!!, numOfOffices!!)
+    println("Enter file name: ")
+    val text = File(readLine()).inputStream().bufferedReader().use { it.readText() }
+    val numbers = text.trim().split("\\W+".toRegex()).toCollection(ArrayList())
+
+    val numOfCouples = numbers.removeAt(0).toInt()
+    val numOfOffices = numbers.removeAt(0).toInt()
+
+    Matrix.instance.init(matrixSize!!, numOfOffices)
 
     for (i in 1..numOfCouples) { //MEN
-        val input = readLine()?.split(' ')
-        val inputInt = input!!.map {inpString -> inpString.toInt()}
-        val agent = Agent(inputInt[0], ElementKind.MAN, Matrix.instance.getAvailablePosition())
-        agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
+        val agent = Agent(numbers.removeAt(0).toInt(), ElementKind.MAN, Matrix.instance.getAvailablePosition())
+        for (i in 1..numOfCouples) {
+            agent.matchPreference.add(numbers.removeAt(0).toInt())
+        }
         Matrix.instance.addAgent(agent, agent.position)
     }
 
     for (i in 1..numOfCouples) { //WOMEN
-        val input = readLine()?.split(' ')
-        val inputInt = input!!.map {inpString -> inpString.toInt()}
-        val agent = Agent(inputInt[0], ElementKind.WOMAN, Matrix.instance.getAvailablePosition())
-        agent.matchPreference = inputInt.subList(1, 3).toTypedArray()
+        val agent = Agent(numbers.removeAt(0).toInt(), ElementKind.WOMAN, Matrix.instance.getAvailablePosition())
+        for (i in 1..numOfCouples) {
+            agent.matchPreference.add(numbers.removeAt(0).toInt())
+        }
         Matrix.instance.addAgent(agent, agent.position)
     }
 
@@ -29,7 +35,7 @@ fun main(args: Array<String>) {
 
     var round = 0
 
-    while (round < 1000) {
+    while (round < 10000) {
         val agents = Matrix.instance.agents.clone() as ArrayList<Agent>
         agents.forEach { agent ->
             if (Matrix.instance.getAgentByID(agent.id, agent.kind) == null) return@forEach

@@ -1,26 +1,21 @@
-import kotlin.math.min
 
 class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCoupleIndex(), ElementKind.COUPLE, position) {
     val husband = husband
     val wife = wife
-    val couplePreference = Util.getCouplePreference(husband, wife)!!
+    private val couplePreference = Util.getCouplePreference(husband, wife)!!
 
     override fun checkNeighborhood(): Boolean {
         val neighbors = Matrix.instance.getNeighbors(position, 2, false).filter {it is Agent}.map { it as Agent }
         val filteredNeighbors = neighbors.filter {
             if (it is Couple) {
-                couplePreference > min(Util.getCouplePreference(this.husband, it.wife)!!, Util.getCouplePreference(this.wife, it.husband)!!)
+                couplePreference > (Util.getCouplePreference(this.husband, it.wife)!! + Util.getCouplePreference(this.wife, it.husband)!!)/2.0
             } else {
-                if (it.kind == ElementKind.MAN) {
-                    couplePreference > this.wife.matchPreference.indexOf(it.id).toDouble()
-                } else {
-                    couplePreference > this.husband.matchPreference.indexOf(it.id).toDouble()
-                }
+                couplePreference > Util.getCouplePreference(if(it.kind == ElementKind.MAN) wife else husband, it)!!
             }
         }
         val sortedNeighbors = filteredNeighbors.sortedBy {
             if (it is Couple) {
-                min(Util.getCouplePreference(this.husband, it.wife)!!, Util.getCouplePreference(this.wife, it.husband)!!)
+                (Util.getCouplePreference(this.husband, it.wife)!! + Util.getCouplePreference(this.wife, it.husband)!!)/2.0
             } else {
                 if (it.kind == ElementKind.MAN) {
                     this.wife.matchPreference.indexOf(it.id).toDouble()
@@ -46,42 +41,43 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
     override fun receiveProposalFrom(agent: Agent) : Boolean {
         if (newPartnerID != null) {
             var betterPartnerFound = false
+            val newPartner = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!)!!
             if (agent.kind == newPartnerKind!!) {
                 if (agent is Couple) {
-                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
-                    val minNewPartner = min(this.husband.matchPreference.indexOf(couple.wife.id), this.wife.matchPreference.indexOf(couple.husband.id))
-                    val minAgent = min(this.husband.matchPreference.indexOf(agent.wife.id), this.wife.matchPreference.indexOf(agent.husband.id))
+                    val couple: Couple = newPartner as Couple
+                    val minNewPartner = (Util.getCouplePreference(this.husband, couple.wife)!! + Util.getCouplePreference(this.wife, couple.husband)!!)/2.0
+                    val minAgent = (Util.getCouplePreference(this.husband, agent.wife)!! + Util.getCouplePreference(this.wife, agent.husband)!!)/2.0
                     if (minAgent < minNewPartner) betterPartnerFound = true
                 } else if (agent.kind == ElementKind.MAN) {
-                    if (wife.matchPreference.indexOf(agent.id) < wife.matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+                    if (Util.getCouplePreference(wife, agent)!! < Util.getCouplePreference(wife, newPartner)!!)  betterPartnerFound = true
                 } else if (agent.kind == ElementKind.WOMAN) {
-                    if (husband.matchPreference.indexOf(agent.id) < husband.matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+                    if (Util.getCouplePreference(husband, agent)!! < Util.getCouplePreference(husband, newPartner)!!)  betterPartnerFound = true
                 }
             } else {
                 when(newPartnerKind) {
                     ElementKind.COUPLE -> {
-                        val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
-                        val minNewPartner = min(this.husband.matchPreference.indexOf(couple.wife.id), this.wife.matchPreference.indexOf(couple.husband.id))
+                        val couple: Couple = newPartner as Couple
+                        val minNewPartner = (Util.getCouplePreference(this.husband, couple.wife)!! + Util.getCouplePreference(this.wife, couple.husband)!!)/2.0
                         if (agent.kind == ElementKind.MAN) {
-                            if (this.wife.matchPreference.indexOf(agent.id) < minNewPartner) betterPartnerFound = true
+                            if (Util.getCouplePreference(wife, agent)!! < minNewPartner) betterPartnerFound = true
                         } else if (agent.kind == ElementKind.WOMAN) {
-                            if (this.husband.matchPreference.indexOf(agent.id) < minNewPartner) betterPartnerFound = true
+                            if (Util.getCouplePreference(husband, agent)!! < minNewPartner) betterPartnerFound = true
                         }
                     }
                     ElementKind.WOMAN -> {
                         if (agent is Couple) {
-                            val minAgent = min(this.husband.matchPreference.indexOf(agent.wife.id), this.wife.matchPreference.indexOf(agent.husband.id))
-                            if (minAgent < this.husband.matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+                            val minAgent = (Util.getCouplePreference(this.husband, agent.wife)!! + Util.getCouplePreference(this.wife, agent.husband)!!)/2.0
+                            if (minAgent < Util.getCouplePreference(husband, newPartner)!!) betterPartnerFound = true
                         } else if (agent.kind == ElementKind.MAN) {
-                            if (wife.matchPreference.indexOf(agent.id) < husband.matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+                            if (Util.getCouplePreference(wife, agent)!! < Util.getCouplePreference(husband, newPartner)!!) betterPartnerFound = true
                         }
                     }
                     ElementKind.MAN -> {
                         if (agent is Couple) {
-                            val minAgent = min(this.husband.matchPreference.indexOf(agent.wife.id), this.wife.matchPreference.indexOf(agent.husband.id))
-                            if (minAgent < this.wife.matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+                            val minAgent = (Util.getCouplePreference(this.husband, agent.wife)!! + Util.getCouplePreference(this.wife, agent.husband)!!)/2.0
+                            if (minAgent < Util.getCouplePreference(wife, newPartner)!!) betterPartnerFound = true
                         } else if (agent.kind == ElementKind.WOMAN) {
-                            if (husband.matchPreference.indexOf(agent.id) < wife.matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+                            if (Util.getCouplePreference(husband, agent)!! < Util.getCouplePreference(wife, newPartner)!!) betterPartnerFound = true
                         }
                      }
                 }
@@ -97,9 +93,8 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
             }
         } else {
             if (agent is Couple) {
-                val minCouple = min(this.husband.matchPreference.indexOf(this.wife.id), this.wife.matchPreference.indexOf(this.husband.id))
-                val minAgent = min(this.husband.matchPreference.indexOf(agent.wife.id), this.wife.matchPreference.indexOf(agent.husband.id))
-                if (minAgent < minCouple) {
+                val minAgent = (Util.getCouplePreference(this.husband, agent.wife)!! + Util.getCouplePreference(this.wife, agent.husband)!!)/2.0
+                if (minAgent < this.couplePreference) {
                     newPartnerID = agent.id
                     newPartnerKind = agent.kind
                     val office = Matrix.instance.getNearestOfficeFrom(agent.position)
@@ -107,7 +102,7 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
                     return true
                 }
             } else if (agent.kind == ElementKind.MAN) {
-                if (wife.matchPreference.indexOf(agent.id) < wife.matchPreference.indexOf(husband.id)) {
+                if (Util.getCouplePreference(wife, agent)!! < this.couplePreference) {
                     newPartnerID = agent.id
                     newPartnerKind = agent.kind
                     val office = Matrix.instance.getNearestOfficeFrom(agent.position)
@@ -115,7 +110,7 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
                     return true
                 }
             } else if (agent.kind == ElementKind.WOMAN) {
-                if (husband.matchPreference.indexOf(agent.id) < husband.matchPreference.indexOf(wife.id)) {
+                if (Util.getCouplePreference(husband, agent)!! < this.couplePreference) {
                     newPartnerID = agent.id
                     newPartnerKind = agent.kind
                     val office = Matrix.instance.getNearestOfficeFrom(agent.position)

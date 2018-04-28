@@ -3,7 +3,7 @@
 open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(agentSex, pos, "[${agentSex.symbol}${agentID ?: ""}]"){
     val id = agentID
     private var direction = Direction.EAST
-    var matchPreference: Array<Int> = emptyArray()
+    var matchPreference: ArrayList<Int> = ArrayList()
     var state = AgentState.WALKING
     internal var officePath: ArrayList<Position> = ArrayList()
     internal var officeGoal: Position? = null
@@ -84,15 +84,25 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     open fun receiveProposalFrom(agent: Agent) : Boolean {
         if (newPartnerID != null) {
             var betterPartnerFound = false
+            val newPartner = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!)!!
             if (newPartnerKind == ElementKind.COUPLE) {
-                if (oppositeSex == ElementKind.MAN) {
-                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.husband.id)) betterPartnerFound = true
+                val couple = newPartner as Couple
+                if (agent is Couple) {
+                    if (oppositeSex == ElementKind.MAN) {
+                        if (Util.getCouplePreference(this, agent.husband)!! < Util.getCouplePreference(this, couple.husband)!!) betterPartnerFound = true
+                    } else {
+                        if (Util.getCouplePreference(this, agent.wife)!! < Util.getCouplePreference(this, couple.wife)!!) betterPartnerFound = true
+                    }
                 } else {
-                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.wife.id)) betterPartnerFound = true
+                    if (Util.getCouplePreference(this, agent)!! < Util.getCouplePreference(this, if(oppositeSex == ElementKind.MAN) couple.husband else couple.wife)!!) betterPartnerFound = true
                 }
-            } else if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+            } else {
+                if (agent is Couple) {
+                    if (Util.getCouplePreference(this, if(oppositeSex == ElementKind.MAN) agent.husband else agent.wife)!! < Util.getCouplePreference(this, newPartner)!!) betterPartnerFound = true
+                } else {
+                    if (Util.getCouplePreference(this, agent)!! < Util.getCouplePreference(this, newPartner)!!) betterPartnerFound = true
+                }
+            }
 
             if (betterPartnerFound) {
                 Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
