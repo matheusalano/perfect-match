@@ -14,15 +14,14 @@ public enum ElementKind {
     public String getSymbol() {
         StringBuilder sb = new StringBuilder();
         switch (value) {
-            case 1: sb.append("[Ma]"); break;
-            case 2: sb.append("[Wo]"); break;
+            case 1: sb.append("M"); break;
+            case 2: sb.append("W"); break;
             case 3: sb.append("[Co]"); break;
             case 4: sb.append("----"); break;
             case 5: sb.append("####"); break;
             case 6: sb.append("[RO]"); break;
             default: sb.append("Err"); break; //error
         }
-        sb.append("\n");
         return sb.toString();
     }
 
