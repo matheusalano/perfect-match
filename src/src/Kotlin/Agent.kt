@@ -3,7 +3,7 @@
 open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(agentSex, pos, "[${agentSex.symbol}${agentID ?: ""}]"){
     val id = agentID
     private var direction = Direction.EAST
-    var matchPreference: Array<Int> = emptyArray()
+    var matchPreference: ArrayList<Int> = ArrayList()
     var state = AgentState.WALKING
     internal var officePath: ArrayList<Position> = ArrayList()
     internal var officeGoal: Position? = null
@@ -41,13 +41,15 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     internal fun walk() {
         var newPos = nextPosition()
         var done = false
-
+        var attempts = 0
         while (!done) {
+            if (attempts > 10) return
+            attempts++
             if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0) {
                 direction = if (Util.rand(0,10) < 8) direction.getOposite() else direction.turnRight()
                 newPos = nextPosition()
             } else if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0 || !Matrix.instance.isAvailable(newPos)) {
-                direction = if (Util.rand(0,10) < 5) direction.turnRight() else direction.turnLeft()
+                direction = if (Util.rand(0,100) < 50) direction.turnRight() else direction.turnLeft()
                 newPos = nextPosition()
             } else {
                 done = true
@@ -84,15 +86,25 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     open fun receiveProposalFrom(agent: Agent) : Boolean {
         if (newPartnerID != null) {
             var betterPartnerFound = false
+            val newPartner = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!)!!
             if (newPartnerKind == ElementKind.COUPLE) {
-                if (oppositeSex == ElementKind.MAN) {
-                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.husband.id)) betterPartnerFound = true
+                val couple = newPartner as Couple
+                if (agent is Couple) {
+                    if (oppositeSex == ElementKind.MAN) {
+                        if (Util.getCouplePreference(this, agent.husband)!! < Util.getCouplePreference(this, couple.husband)!!) betterPartnerFound = true
+                    } else {
+                        if (Util.getCouplePreference(this, agent.wife)!! < Util.getCouplePreference(this, couple.wife)!!) betterPartnerFound = true
+                    }
                 } else {
-                    val couple: Couple = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!) as Couple
-                    if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(couple.wife.id)) betterPartnerFound = true
+                    if (Util.getCouplePreference(this, agent)!! < Util.getCouplePreference(this, if(oppositeSex == ElementKind.MAN) couple.husband else couple.wife)!!) betterPartnerFound = true
                 }
-            } else if (matchPreference.indexOf(agent.id) < matchPreference.indexOf(newPartnerID)) betterPartnerFound = true
+            } else {
+                if (agent is Couple) {
+                    if (Util.getCouplePreference(this, if(oppositeSex == ElementKind.MAN) agent.husband else agent.wife)!! < Util.getCouplePreference(this, newPartner)!!) betterPartnerFound = true
+                } else {
+                    if (Util.getCouplePreference(this, agent)!! < Util.getCouplePreference(this, newPartner)!!) betterPartnerFound = true
+                }
+            }
 
             if (betterPartnerFound) {
                 Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
@@ -148,6 +160,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         var currPos = goal
 
         while (currPos != position) {
+            if (cameFrom[currPos] == null) println("Current Position: $currPos ;; Position: $position ;; Goal: $goal")
             currPos = cameFrom[currPos]!!
             if (currPos == position) break
             path.add(currPos)
