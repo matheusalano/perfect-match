@@ -2,7 +2,10 @@
 
 import java.io.File
 
+var verbose = 0
+
 fun main(args: Array<String>) {
+    verbose = if (args.isNotEmpty()) args[0].toInt() else 3
     println("Enter the matrix size:")
     val matrixSize = readLine()?.toInt()
 
@@ -34,24 +37,35 @@ fun main(args: Array<String>) {
     Matrix.instance.printMatrix()
 
     var round = 0
+    val maxRound = if (args.size > 1) args[1].toInt() else 10000
+    var roundsNoMarriage = 0
+    val maxRoundsNoMarriage = if (args.size > 2) args[2].toInt() else 200
 
-    while (round < 10000) {
+    while (round < maxRound && roundsNoMarriage < maxRoundsNoMarriage) {
+        round++
         val agents = Matrix.instance.agents.clone() as ArrayList<Agent>
+        var marriage = false
         agents.forEach { agent ->
             if (Matrix.instance.getAgentByID(agent.id, agent.kind) == null) return@forEach
             if (agent.state == AgentState.AT_OFFICE) {
                 val partnerAgent = Matrix.instance.getAgentByID(agent.newPartnerID!!, agent.newPartnerKind!!)!!
                 if (partnerAgent.state == AgentState.AT_OFFICE) {
                     Util.registryOffice(agent, partnerAgent)
+                    marriage = true
+                    roundsNoMarriage = 0
                 }
             } else {
                 agent.action()
             }
         }
-        round++
-//        Thread.sleep(1_000)
-//        val waitFor = ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor() //Clear windows CMD
-//        Matrix.instance.printMatrix()
+        if (!marriage) roundsNoMarriage++
+        if (verbose == 1) {
+            Thread.sleep(800)
+            val waitFor = ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor() //Clear windows CMD
+            Matrix.instance.printMatrix()
+        }
     }
+    if (round == maxRound) println("Execution finished because max round was reached.")
+    else if (roundsNoMarriage == maxRoundsNoMarriage) println("Execution finished because there were $roundsNoMarriage rounds with no marriage.")
     Matrix.instance.printCouples()
 }

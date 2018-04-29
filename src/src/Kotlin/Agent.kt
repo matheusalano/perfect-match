@@ -41,13 +41,15 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     internal fun walk() {
         var newPos = nextPosition()
         var done = false
-
+        var attempts = 0
         while (!done) {
+            if (attempts > 10) return
+            attempts++
             if (newPos.y > Matrix.instance.size - 1 || newPos.y < 0) {
                 direction = if (Util.rand(0,10) < 8) direction.getOposite() else direction.turnRight()
                 newPos = nextPosition()
             } else if (newPos.x > Matrix.instance.size - 1 || newPos.x < 0 || !Matrix.instance.isAvailable(newPos)) {
-                direction = if (Util.rand(0,10) < 5) direction.turnRight() else direction.turnLeft()
+                direction = if (Util.rand(0,100) < 50) direction.turnRight() else direction.turnLeft()
                 newPos = nextPosition()
             } else {
                 done = true
@@ -158,6 +160,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         var currPos = goal
 
         while (currPos != position) {
+            if (cameFrom[currPos] == null) println("Current Position: $currPos ;; Position: $position ;; Goal: $goal")
             currPos = cameFrom[currPos]!!
             if (currPos == position) break
             path.add(currPos)
