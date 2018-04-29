@@ -3,12 +3,13 @@
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
+import kotlin.system.exitProcess
 
 class Matrix private constructor() {
     private var matrix: Array<Array<Element>> = emptyArray()
     var size = -1
     private set
-    var registryOffices : ArrayList<Element> = ArrayList()
+    var registryOffices : ArrayList<RegistryOffice> = ArrayList()
     var agents : ArrayList<Agent> = ArrayList()
     private set
 
@@ -24,7 +25,7 @@ class Matrix private constructor() {
     }
 
     private fun addWallsAndOffices(numOfOffices: Int) {
-        val wallsNum = round((size.toDouble() / 5.0) + 0.5)
+        val wallsNum = round((size.toDouble() / 5.0) - 0.6)
         val wallHeight = size/2
         val posFactor = round(size / (wallsNum + 2) + 0.5)
         val officesPerWall = numOfOffices / wallsNum
@@ -56,7 +57,7 @@ class Matrix private constructor() {
                     x = (wallX + officePosY)
                 } while(matrix[x][y].kind == ElementKind.REGISTRY_OFFICE)
 
-                val office = Element(ElementKind.REGISTRY_OFFICE, Position(x, y))
+                val office = RegistryOffice(Position(x, y))
                 registryOffices.add(office)
                 matrix[x][y] = office
             }
@@ -125,13 +126,35 @@ class Matrix private constructor() {
         return matrix[pos.x][pos.y]
     }
 
-    fun getNearestOfficeFrom(position: Position) : Element {
-        var nearestOffice = registryOffices[0]
-
-        registryOffices.forEach { office ->
-            if (Util.heuristic(office.position, position) < Util.heuristic(nearestOffice.position, position)) nearestOffice = office
+    fun updateOfficeStatus(position: Position, availability: Boolean) {
+        for (i in registryOffices.indices) {
+            if (registryOffices[i].position == position) {
+                if (availability) {
+                    if (registryOffices[i].couplesUsingIt == 0) {
+                        println("Office has negative couples using it.")
+                        exitProcess(1)
+                    }
+                    registryOffices[i].couplesUsingIt--
+                } else {
+                    registryOffices[i].couplesUsingIt++
+                }
+                return
+            }
         }
-        return nearestOffice
+    }
+
+    fun getNearestOfficeFrom(position: Position) : RegistryOffice {
+        val sortedOffices = registryOffices.sortedBy { Util.heuristic(it.position, position) }
+
+        sortedOffices.forEach {
+            if (it.isAvailable) {
+                updateOfficeStatus(it.position, false)
+                return it
+            }
+        }
+        val office = registryOffices.sortedBy { it.couplesUsingIt }.first()
+        updateOfficeStatus(office.position, false)
+        return office
     }
 
     fun getNeighbors(position: Position, radius: Int = 1, onlyGround: Boolean = false) : Array<Element> {

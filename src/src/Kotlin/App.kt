@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
         Matrix.instance.addAgent(agent, agent.position)
     }
 
-    Matrix.instance.printMatrix()
+//    Matrix.instance.printMatrix()
 
     var round = 0
     val maxRound = if (args.size > 1) args[1].toInt() else 10000
@@ -50,7 +50,7 @@ fun main(args: Array<String>) {
             if (agent.state == AgentState.AT_OFFICE) {
                 val partnerAgent = Matrix.instance.getAgentByID(agent.newPartnerID!!, agent.newPartnerKind!!)!!
                 if (partnerAgent.state == AgentState.AT_OFFICE) {
-                    Util.registryOffice(agent, partnerAgent)
+                    RegistryOffice.registryOffice(agent, partnerAgent)
                     marriage = true
                     roundsNoMarriage = 0
                 }
