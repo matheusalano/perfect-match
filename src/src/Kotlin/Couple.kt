@@ -25,11 +25,11 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
             }
         }
 
+        val office = Matrix.instance.getNearestOfficeFrom(this.position)
         sortedNeighbors.forEach { agent  ->
-            if (agent.receiveProposalFrom(this)) {
+            if (agent.receiveProposalFrom(this, office)) {
                 newPartnerID = agent.id
                 newPartnerKind = agent.kind
-                val office = Matrix.instance.getNearestOfficeFrom(this.position)
                 aStar(office.position)
                 return true
             }
@@ -38,7 +38,7 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
         return false
     }
 
-    override fun receiveProposalFrom(agent: Agent) : Boolean {
+    override fun receiveProposalFrom(agent: Agent, office: RegistryOffice) : Boolean {
         if (newPartnerID != null) {
             var betterPartnerFound = false
             val newPartner = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!)!!
@@ -87,7 +87,6 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
                 Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
                 newPartnerID = agent.id
                 newPartnerKind = agent.kind
-                val office = Matrix.instance.getNearestOfficeFrom(agent.position)
                 aStar(office.position)
                 return true
             }
@@ -97,7 +96,6 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
                 if (minAgent < this.couplePreference) {
                     newPartnerID = agent.id
                     newPartnerKind = agent.kind
-                    val office = Matrix.instance.getNearestOfficeFrom(agent.position)
                     aStar(office.position)
                     return true
                 }
@@ -105,7 +103,6 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
                 if (Util.getCouplePreference(wife, agent)!! < this.couplePreference) {
                     newPartnerID = agent.id
                     newPartnerKind = agent.kind
-                    val office = Matrix.instance.getNearestOfficeFrom(agent.position)
                     aStar(office.position)
                     return true
                 }
@@ -113,7 +110,6 @@ class Couple(husband: Agent, wife: Agent, position: Position) : Agent(Util.getCo
                 if (Util.getCouplePreference(husband, agent)!! < this.couplePreference) {
                     newPartnerID = agent.id
                     newPartnerKind = agent.kind
-                    val office = Matrix.instance.getNearestOfficeFrom(agent.position)
                     aStar(office.position)
                     return true
                 }

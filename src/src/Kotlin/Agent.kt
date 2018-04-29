@@ -6,7 +6,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
     var matchPreference: ArrayList<Int> = ArrayList()
     var state = AgentState.WALKING
     internal var officePath: ArrayList<Position> = ArrayList()
-    internal var officeGoal: Position? = null
+    var officeGoal: Position? = null
     private val oppositeSex = if (kind == ElementKind.MAN) ElementKind.WOMAN else ElementKind.MAN
     internal open var newPartnerID: Int? = null
     internal open var newPartnerKind: ElementKind? = null
@@ -38,7 +38,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         }
     }
 
-    internal fun walk() {
+    private fun walk() {
         var newPos = nextPosition()
         var done = false
         var attempts = 0
@@ -71,11 +71,11 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
             }
         }
 
+        val office = Matrix.instance.getNearestOfficeFrom(this.position)
         sortedNeighbors.forEach { agent  ->
-            if (agent.receiveProposalFrom(this)) {
+            if (agent.receiveProposalFrom(this, office)) {
                 newPartnerID = agent.id
                 newPartnerKind = agent.kind
-                val office = Matrix.instance.getNearestOfficeFrom(this.position)
                 aStar(office.position)
                 return true
             }
@@ -83,7 +83,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         return false
     }
 
-    open fun receiveProposalFrom(agent: Agent) : Boolean {
+    open fun receiveProposalFrom(agent: Agent, office: RegistryOffice) : Boolean {
         if (newPartnerID != null) {
             var betterPartnerFound = false
             val newPartner = Matrix.instance.getAgentByID(newPartnerID!!, newPartnerKind!!)!!
@@ -110,14 +110,12 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
                 Matrix.instance.updateAgentStateByID(newPartnerID!!, newPartnerKind!!, AgentState.WALKING)
                 newPartnerID = agent.id
                 newPartnerKind = agent.kind
-                val office = Matrix.instance.getNearestOfficeFrom(agent.position)
                 aStar(office.position)
                 return true
             }
         } else {
             newPartnerID = agent.id
             newPartnerKind = agent.kind
-            val office = Matrix.instance.getNearestOfficeFrom(agent.position)
             aStar(office.position)
             return true
         }
@@ -160,7 +158,6 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
         var currPos = goal
 
         while (currPos != position) {
-            if (cameFrom[currPos] == null) println("Current Position: $currPos ;; Position: $position ;; Goal: $goal")
             currPos = cameFrom[currPos]!!
             if (currPos == position) break
             path.add(currPos)
