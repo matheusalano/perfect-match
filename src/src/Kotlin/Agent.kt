@@ -31,7 +31,7 @@ open class Agent(agentID: Int, agentSex: ElementKind, pos: Position) : Element(a
                 Matrix.instance.updatePosition(this, oldPosition)
             } else {
                 val elem = Matrix.instance.getElementByPosition(officePath.last())
-                if (elem is Agent && elem.state == AgentState.AT_OFFICE) {
+                if (elem is Agent && (elem.state == AgentState.AT_OFFICE || elem.state == AgentState.GOING_TO_OFFICE)) {
                     aStar(officeGoal!!)
                 }
             }
